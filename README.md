@@ -5,13 +5,6 @@ React tooltip component that follow mouse cursor. You can pass as children any H
   <img src="preview.gif" alt="Component functionality preview">
 </p>
 
-## Installation
-`npm install react-sticky-mouse-tooltip --save`
-
-or
-
-`yarn add react-sticky-mouse-tooltip`
-
 ## Example
 ```js
 import React from 'react';
