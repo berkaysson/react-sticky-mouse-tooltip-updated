@@ -1,85 +1,70 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { useState, useEffect } from "react";
 
-class MouseTooltip extends React.PureComponent {
-  static defaultProps = {
-    visible: true,
-    offsetX: 0,
-    offsetY: 0,
+const MouseTooltip = ({
+  className,
+  visible = true,
+  offsetX = 0,
+  offsetY = 0,
+  style,
+  children,
+}) => {
+  const [xPosition, setXPosition] = useState(0);
+  const [yPosition, setYPosition] = useState(0);
+  const [mouseMoved, setMouseMoved] = useState(false);
+  const [listenerActive, setListenerActive] = useState(false);
+
+  const getTooltipPosition = ({ clientX, clientY }) => {
+    setXPosition(clientX);
+    setYPosition(clientY);
+    setMouseMoved(true);
   };
 
-  state = {
-    xPosition: 0,
-    yPosition: 0,
-    mouseMoved: false,
-    listenerActive: false,
+  const addListener = () => {
+    window.addEventListener("mousemove", getTooltipPosition);
+    setListenerActive(true);
   };
 
-  componentDidMount() {
-    this.addListener();
-  }
-
-  componentDidUpdate() {
-    this.updateListener();
-  }
-
-  componentWillUnmount() {
-    this.removeListener();
-  }
-
-  getTooltipPosition = ({ clientX: xPosition, clientY: yPosition }) => {
-    this.setState({
-      xPosition,
-      yPosition,
-      mouseMoved: true,
-    });
+  const removeListener = () => {
+    window.removeEventListener("mousemove", getTooltipPosition);
+    setListenerActive(false);
   };
 
-  addListener = () => {
-    window.addEventListener('mousemove', this.getTooltipPosition);
-    this.setState({ listenerActive: true });
-  };
+  useEffect(() => {
+    addListener();
+    return () => {
+      removeListener();
+    };
+  }, []);
 
-  removeListener = () => {
-    window.removeEventListener('mousemove', this.getTooltipPosition);
-    this.setState({ listenerActive: false });
-  };
-
-  updateListener = () => {
-    if (!this.state.listenerActive && this.props.visible) {
-      this.addListener();
+  useEffect(() => {
+    if (!listenerActive && visible) {
+      addListener();
     }
 
-    if (this.state.listenerActive && !this.props.visible) {
-      this.removeListener();
+    if (listenerActive && !visible) {
+      removeListener();
     }
-  };
+  }, [visible, listenerActive]);
 
-  render() {
-    return (
-      <div
-        className={this.props.className}
-        style={{
-          display: this.props.visible && this.state.mouseMoved ? 'block' : 'none',
-          position: 'fixed',
-          top: this.state.yPosition + this.props.offsetY,
-          left: this.state.xPosition + this.props.offsetX,
-          ...this.props.style,
-        }}
-      >
-        {this.props.children}
-      </div>
-    );
-  }
-}
-
-MouseTooltip.propTypes = {
-  visible: PropTypes.bool,
-  children: PropTypes.node.isRequired,
-  offsetX: PropTypes.number,
-  offsetY: PropTypes.number,
-  className: PropTypes.string,
-  style: PropTypes.object, // eslint-disable-line react/forbid-prop-types
+  return (
+    <div
+      className={className}
+      style={{
+        display: visible && mouseMoved ? "block" : "none",
+        position: "fixed",
+        top: yPosition + offsetY,
+        left: xPosition + offsetX,
+        zIndex:9999,
+        pointerEvents:"none",
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
 };
+
+export default MouseTooltip;
+
 
 export default MouseTooltip;
